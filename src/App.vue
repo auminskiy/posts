@@ -1,130 +1,20 @@
 <template>
  <div>
+  <NavBar></NavBar>
+<router-view>
 
-  <h1>Posts</h1>
-  <my-input v-model="searchQuery" placeholder="search"/>
-  <div>
-    <my-button @click="showDialog">Click to add post</my-button>
-    <my-select :value="selectedSort" :options="sortOptions"></my-select>
-  </div>
-  
-  <my-dialog v-model:show="dialogVisible">
-    <PostForm @create="addNewPost"/>
-  </my-dialog>
- 
- <PostList v-if="!isLoading" :posts="searchedPosts" @remove="removePost"/>
- <div v-else>Loading...</div>
- <div class="pages">
-  <div v-for="pageN in totalPages" :key="pageN" class="page" :class="{'currentPage': page === pageN}" @click="changePage(pageN)">{{ pageN }}</div>
- </div>
+</router-view>
  </div>
 </template>
 
 <script>
-import PostForm from '@/components/PostForm.vue'
-import PostList from '@/components/PostList.vue'
-import MyButton from './components/UI/MyButton.vue'
-
-import axios from 'axios'
+import NavBar from '@/components/NavBar.vue';
 
 export default {
 components: {
-PostForm, PostList,
-MyButton, 
-},
-
- data() {
-  return {
-
-    newid: 4,
-    posts: [],
-    dialogVisible: false,
-    isLoading: false,
-    searchQuery: '',
-    selectedSort: '',
-    page: 1,
-    limit: 10,
-    totalPages: 0,
-    sortOptions: [
-      {value: 'title', name: 'by name'},
-      {value: 'body', name: 'by description'},
-    ]
-
-
-}},
- methods: {
-  addNewPost(post){
-    this.posts.push(post);
-    this.dialogVisible = false
-  },
-  inputTitle(e) {
-    this.title = e.target.value;
-  },
-  inputBody(e) {
-    this.body = e.target.value;
-  },
-  removePost(post){
-    this.posts = this.posts.filter(p => p.id !== post.id)
-  },
-  showDialog(){
-    this.dialogVisible = true;
-
-  },
-  async fetchPosts() {
-    try {
-      this.isLoading = true
-     
-        const response = await axios.get('https://jsonplaceholder.typicode.com/posts', {
-        params: {
-          _page: this.page,
-          _limit: this.limit
-        }}
-        )
-        this.totalPages = Math.ceil(response.headers['x-total-count'] / this.limit)
-        console.log(response)
-        this.posts = response.data
- 
-    }
-    catch (e) {
-      alert('error')
-    }
-    finally {
-      this.isLoading = false
-    }
-  },
- changePage(pageN) {
-  this.page = pageN;
-  this.fetchPosts()
- }
- },
-  mounted() {
-    this.fetchPosts()
-  },
-
-  computed: {
-sortedPosts() {
-  return [...this.posts].sort((post1, post2) => {
-        return post1[this.selectedSort]?.localCompare(post2[this.selectedSort])
-        
-      })
-      
-},
-searchedPosts() {
-  return this.sortedPosts.filter(post => post.title.toLowerCase().includes(this.searchQuery.toLowerCase()))
+  NavBar
 }
-  },
-  watch: {
-    selectedSort(newValue) {
-      console.log(newValue)
-      this.posts.sort((a, b) => {
-        return a[newValue]?.localCompare(b[newValue])
-      })
-    },
-    dialogVisible(newValue) {
-      console.log(newValue)
-    }
-  }
- }
+}
 </script>
 
 <style>
@@ -158,5 +48,9 @@ margin-top: 10px;
   color: goldenrod;
   border: 2px solid gold;
   border-radius: 25px;
+}
+.observer{
+  height: 50px;
+  
 }
 </style>
