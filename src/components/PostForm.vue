@@ -1,7 +1,7 @@
 <template>
     <div>
         <form class="form" @submit.prevent>
-   <my-input v-model="post.title" type="text" placeholder="title" />
+   <my-input  v-model="post.title" type="text" placeholder="title" />
    <my-input v-model="post.body"  type="text" placeholder="description" />
    
      </form>
@@ -24,6 +24,7 @@
     newId: 4,
     
 }},
+
 methods: {
   addNewPost: function() {
     this.post.id = this.newId++

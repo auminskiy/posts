@@ -1,8 +1,13 @@
 <template>
     <div>
-   
+        <h1>{{ $store.state.isAuth ? 'auth' : 'not auth' }}</h1>
+   <h2>{{ $store.getters.doubleLikes }}</h2>
+   <div> 
+    <my-button @click="$store.commit('incrementLikes')">like</my-button>
+    <my-button  @click="$store.commit('decrementLikes')">dislike</my-button>
+</div>
      <h1>Posts</h1>
-     <my-input v-focus v-model="searchQuery" placeholder="search"/>
+     <my-input v-focus :model-value="searchQuery" @update:model-value="setSearchQuery" placeholder="search"/>
      <div>
        <my-button @click="showDialog">Click to add post</my-button>
        <my-select :value="selectedSort" :options="sortOptions"></my-select>
@@ -25,8 +30,8 @@
    import PostForm from '@/components/PostForm.vue'
    import PostList from '@/components/PostList.vue'
    
+   import {mapState, mapGetters, mapMutations, mapActions} from 'vuex'
    
-   import axios from 'axios'
    
    export default {
    components: {
@@ -37,23 +42,23 @@
     data() {
      return {
    
-       newid: 4,
-       posts: [],
        dialogVisible: false,
-       isLoading: false,
-       searchQuery: '',
-       selectedSort: '',
-       page: 1,
-       limit: 10,
-       totalPages: 0,
-       sortOptions: [
-         {value: 'title', name: 'by name'},
-         {value: 'body', name: 'by description'},
-       ]
-   
-   
+ 
    }},
     methods: {
+        ...mapMutations({
+            setPage: 'setPage',
+            setSearchQuery: 'setSearchQuery'
+        }),
+        ...mapActions({
+            loadMorePosts: 'loadMorePosts',
+            fetchPosts: 'fetchPosts'
+        }),
+        ...mapGetters({
+
+        }),
+
+
      addNewPost(post){
        this.posts.push(post);
        this.dialogVisible = false
@@ -71,48 +76,7 @@
        this.dialogVisible = true;
    
      },
-     async fetchPosts() {
-       try {
-         this.isLoading = true
-        
-           const response = await axios.get('https://jsonplaceholder.typicode.com/posts', {
-           params: {
-             _page: this.page,
-             _limit: this.limit
-           }}
-           )
-           this.totalPages = Math.ceil(response.headers['x-total-count'] / this.limit)
-           console.log(response)
-           this.posts = response.data
-    
-       }
-       catch (e) {
-         alert('error')
-       }
-       finally {
-         this.isLoading = false
-       }
-     },
-     async loadMorePosts() {
-       try {
-         this.isLoading = true
-        
-           const response = await axios.get('https://jsonplaceholder.typicode.com/posts', {
-           params: {
-             _page: this.page,
-             _limit: this.limit
-           }}
-           )
-           this.totalPages = Math.ceil(response.headers['x-total-count'] / this.limit)
-           console.log(response)
-           this.posts = [...this.posts, ...response.data]
-    
-       }
-       catch (e) {
-         alert('error')
-       }
-      
-     },
+     
    // changePage(pageN) {
     // this.page = pageN;
     // this.fetchPosts()
@@ -139,16 +103,22 @@
    
    
      computed: {
-   sortedPosts() {
-     return [...this.posts].sort((post1, post2) => {
-           return post1[this.selectedSort]?.localCompare(post2[this.selectedSort])
-           
-         })
-         
-   },
-   searchedPosts() {
-     return this.sortedPosts.filter(post => post.title.toLowerCase().includes(this.searchQuery.toLowerCase()))
-   }
+        ...mapState({
+        
+        posts: state => state.post.posts,
+        isLoading: state => state.post.isLoading,
+        searchQuery: state => state.post.searchQuery,
+        page: state => state.post.page,
+        limit: state => state.post.limit,
+        totalPages: state => state.post.totalPages,
+        sortOptions: state => state.post.sortOptions
+    
+        }),
+        ...mapGetters({
+            sortedPosts: 'sortedPosts',
+            searchedPosts: 'searchedPosts',
+        })
+  
      },
      watch: {
        selectedSort(newValue) {
